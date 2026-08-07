@@ -1,52 +1,122 @@
 const display = document.getElementById("display");
 const buttons = document.querySelectorAll(".buttons button");
 
+// =========================
+// Calculate Expression
+// =========================
+async function calculateExpression() {
+
+    const response = await fetch("/calculate", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            expression: display.value
+        })
+
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+
+        display.value = data.result;
+
+    }
+    else {
+
+        display.value = data.error;
+
+    }
+
+}
+
+// =========================
+// Scientific Operations
+// =========================
+async function scientificOperation(operation) {
+
+    if (display.value === "")
+        return;
+
+    const response = await fetch("/scientific", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+            operation: operation,
+
+            value: display.value
+
+        })
+
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+
+        display.value = data.result;
+
+    }
+    else {
+
+        display.value = data.error;
+
+    }
+
+}
+
+// =========================
+// Button Click Dispatcher
+// =========================
 buttons.forEach(button => {
 
     button.addEventListener("click", async () => {
 
         const value = button.innerText;
 
-        if (value === "=") {
+        switch (value) {
 
-            const response = await fetch("/calculate", {
+            case "=":
 
-                method: "POST",
+                await calculateExpression();
+                break;
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+            case "C":
 
-                body: JSON.stringify({
-                    expression: display.value
-                })
+                display.value = "";
+                break;
 
-            });
+            case "√":
 
-            const data = await response.json();
+                await scientificOperation("sqrt");
+                break;
 
-            if (data.success) {
+            case "x²":
 
-                display.value = data.result;
+                await scientificOperation("square");
+                break;
 
-            }
-            else {
+            case "%":
 
-                display.value = data.error;
+                await scientificOperation("percent");
+                break;
 
-            }
+            default:
 
-            return;
+                display.value += value;
+
         }
-
-        if (value === "C") {
-
-            display.value = "";
-
-            return;
-        }
-
-        display.value += value;
 
     });
 

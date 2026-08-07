@@ -1,5 +1,6 @@
 import ast
 import operator
+import math
 
 # Allowed operations
 OPERATORS = {
@@ -49,3 +50,22 @@ def _evaluate(node):
         return operation(operand)
 
     raise ValueError("Unsupported operation.")
+
+
+
+def square_root(value):
+
+    if value < 0:
+        raise ValueError("Cannot calculate square root of a negative number.")
+
+    return math.sqrt(value)
+
+
+def square(value):
+
+    return value ** 2
+
+
+def percentage(value):
+
+    return value / 100
