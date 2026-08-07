@@ -1,10 +1,15 @@
 const display = document.getElementById("display");
 const buttons = document.querySelectorAll(".buttons button");
 
+let hasError = false;
+
 // =========================
 // Calculate Expression
 // =========================
 async function calculateExpression() {
+
+    if (display.value.trim() === "")
+        return;
 
     const response = await fetch("/calculate", {
 
@@ -25,11 +30,12 @@ async function calculateExpression() {
     if (data.success) {
 
         display.value = data.result;
+        hasError = false;
 
-    }
-    else {
+    } else {
 
         display.value = data.error;
+        hasError = true;
 
     }
 
@@ -40,7 +46,7 @@ async function calculateExpression() {
 // =========================
 async function scientificOperation(operation) {
 
-    if (display.value === "")
+    if (display.value.trim() === "" || hasError)
         return;
 
     const response = await fetch("/scientific", {
@@ -54,7 +60,6 @@ async function scientificOperation(operation) {
         body: JSON.stringify({
 
             operation: operation,
-
             value: display.value
 
         })
@@ -66,11 +71,12 @@ async function scientificOperation(operation) {
     if (data.success) {
 
         display.value = data.result;
+        hasError = false;
 
-    }
-    else {
+    } else {
 
         display.value = data.error;
+        hasError = true;
 
     }
 
@@ -94,7 +100,10 @@ buttons.forEach(button => {
 
             case "C":
 
+            case "AC":
+
                 display.value = "";
+                hasError = false;
                 break;
 
             case "√":
@@ -114,10 +123,81 @@ buttons.forEach(button => {
 
             default:
 
+                if (hasError) {
+
+                    display.value = "";
+                    hasError = false;
+
+                }
+
                 display.value += value;
 
         }
 
     });
+
+});
+
+// =========================
+// Keyboard Support
+// =========================
+document.addEventListener("keydown", async (event) => {
+
+    const key = event.key;
+
+    // Enter → Calculate
+    if (key === "Enter") {
+
+        event.preventDefault();
+        await calculateExpression();
+        return;
+
+    }
+
+    // Escape → Clear
+    if (key === "Escape") {
+
+        display.value = "";
+        hasError = false;
+        return;
+
+    }
+
+    // Backspace
+    if (key === "Backspace") {
+
+        if (hasError) {
+
+            display.value = "";
+            hasError = false;
+
+        } else {
+
+            display.value = display.value.slice(0, -1);
+
+        }
+
+        event.preventDefault();
+        return;
+
+    }
+
+    // Allowed keys
+    const allowedKeys = "0123456789+-*/().";
+
+    if (allowedKeys.includes(key)) {
+
+        if (hasError) {
+
+            display.value = "";
+            hasError = false;
+
+        }
+
+        display.value += key;
+
+        event.preventDefault();
+
+    }
 
 });
